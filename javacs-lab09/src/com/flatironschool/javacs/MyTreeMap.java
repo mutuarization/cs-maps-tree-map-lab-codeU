@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayDeque;
 
 /**
  * Implementation of a Map using a binary search tree.
@@ -72,7 +73,17 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		Comparable<? super K> k = (Comparable<? super K>) target;
 		
 		// the actual search
-        // TODO: Fill this in.
+        Node node =  root;
+        while(node != null) {
+        	int comparison = k.compareTo(node.key);
+        	if(comparison < 0) {
+        		node = node.left;
+        	} else if(comparison >  0) {
+        		node = node.right;
+        	} else {
+        		return node;
+        	}
+        }
         return null;
 	}
 
@@ -92,6 +103,21 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
+		if(root == null) return false;
+		Deque<Node> stack =  new ArrayDeque<Node>();
+		stack.push(root);
+		while(!stack.isEmpty()) {
+			Node currrentNode = stack.pop();
+			if(equals(target, currrentNode.value)) {
+				return true;
+			}
+			if(currrentNode.left != null) {
+				stack.push(currrentNode.left);
+			}
+			if(currrentNode.right != null) {
+				stack.push(currrentNode.right);
+			}
+		}
 		return false;
 	}
 
@@ -117,8 +143,21 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	@Override
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
-        // TODO: Fill this in.
+		traverseTree(root, set);
 		return set;
+	}
+
+	/**
+	 * Recursively traverses the tree populating the keyset
+	 */
+	private void traverseTree(Node node, Set<K> set) {
+		if(node == null) {
+			return;
+		}
+
+		traverseTree(node.left, set);
+		set.add(node.key);
+		traverseTree(node.right, set);
 	}
 
 	@Override
@@ -134,8 +173,31 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		return putHelper(root, key, value);
 	}
 
-	private V putHelper(Node node, K key, V value) {
-        // TODO: Fill this in.
+	private V putHelper(Node node, K key, V value) {        
+		@SuppressWarnings("unchecked")
+		Comparable<? super K> k = (Comparable<? super K>) key;
+        Node currentNode =  node;
+        while(node != null) {
+        	int comparison = k.compareTo(currentNode.key);
+        	if(comparison < 0) {
+        		if(currentNode.left == null){
+        			currentNode.left = makeNode(key, value);
+        			break;
+        		}
+        		currentNode = currentNode.left;
+        	} else if(comparison >  0) {
+        		if(currentNode.right == null) {
+        			currentNode.right = makeNode(key, value);
+        			break;
+        		}
+        		currentNode = currentNode.right;
+        	} else {
+        		V previous = currentNode.value;
+        		currentNode.value = value;
+        		return previous;
+        	}
+        }
+        size++;
         return null;
 	}
 
